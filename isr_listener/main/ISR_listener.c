@@ -189,6 +189,8 @@ void ISR_dump(void *isrc)
         printf("\t [%02d] [%lld] duration %8lld, level %d\n",
                i, isrd->micros, duration, !isrd->level);
     }
+
+    free(isr_data_list);
 }
 
 

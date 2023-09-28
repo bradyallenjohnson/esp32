@@ -1,3 +1,18 @@
+/*
+ * RMT IR header file for remote control receivers and transmitters
+ *
+ * Copyright (C) 2023 Brady Johnson <bradyallenjohnson@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.  See <https://www.gnu.org/licenses/gpl2.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ */
 
 #ifndef RMT_IR_H_ 
 #define RMT_IR_H_
@@ -83,10 +98,11 @@ typedef struct tx_ir_config_ {
     /* TODO add more parameters as needed */
 } tx_ir_config;
 
+//-------------------------------------------------------------------
+
 /*
  * RMT Reciever API functions
  */
-
 
 /*
  * Initialize RMT IR infra for a receiver
@@ -107,6 +123,15 @@ bool is_receiver_done(rx_ir_config *rx_config);
  */
 int wait_for_receiver(rx_ir_config *rx_config);
 
+// Implemented in rmt_ir_rx_decoders.c
+int decode_rx_data_manchester(
+        rx_ir_config *rx_config,
+        rmt_rx_done_event_data_t *rx_done_data);
+
+// Implemented in rmt_ir_rx_remotes.c
+int setup_remote_musical_fidelity(rx_ir_config *rx_config, int gpio_pin);
+
+//-------------------------------------------------------------------
 
 /*
  * RMT Transmitter API functions
@@ -127,6 +152,8 @@ int start_transmitting(tx_ir_config *tx_config, bool block_until_done);
 bool is_transmitter_done(tx_ir_config *tx_config);
 int wait_for_transmitter(tx_ir_config *tx_config);
 
+
+//-------------------------------------------------------------------
 
 /*
  * API functions common to both the RMT Receiver and Transmitter

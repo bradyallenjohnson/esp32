@@ -1,11 +1,18 @@
 /*
- * ISR_listener
- *
  * Simple Interrupt Service Routine (ISR) listener to listen for level changes
  * on a selected GPIO pin.
  *
- * Sep 2023: <Brady Johnson> bradyallenjohnson@gmail.com
+ * Copyright (C) 2023 Brady Johnson <bradyallenjohnson@gmail.com>
  *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.  See <https://www.gnu.org/licenses/gpl2.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
  */
 
 #include <stdio.h>
@@ -117,10 +124,12 @@ void ISR_delete(void *isrc)
     taskENTER_CRITICAL(&context->isr_spinlock);
 
     ISR_stop(context);
+
+    portMUX_TYPE isr_spinlock = context->isr_spinlock;
     free(context->isr_data_list);
     free(context);
 
-    taskEXIT_CRITICAL(&context->isr_spinlock);
+    taskEXIT_CRITICAL(&isr_spinlock);
 }
 
 
@@ -152,7 +161,7 @@ void ISR_stop(void *isrc)
 
     taskEXIT_CRITICAL(&context->isr_spinlock);
 
-    printf("ISR_stop\n");
+    //printf("ISR_stop\n");
 }
 
 

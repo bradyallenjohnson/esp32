@@ -1,10 +1,18 @@
 /*
- * ISR Listener main
+ * ISR Listener main application for an Interrupt Service Routine (ISR) GPIO
+ * pin-level change listener.
  *
- * Main application for an Interrupt Service Routine (ISR) GPIO pin-level
- * change listener
+ * Copyright (C) 2023 Brady Johnson <bradyallenjohnson@gmail.com>
  *
- * Sep 2023: <Brady Johnson> bradyallenjohnson@gmail.com
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.  See <https://www.gnu.org/licenses/gpl2.txt>.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
  */
 
 #include <stdio.h>
@@ -26,7 +34,7 @@ const int COLLECTION_INTERVAL = 5000 / portTICK_PERIOD_MS;
 void ISR_task(void *pvParameter)
 {
 	printf("Starting ISR Task\n\n");
-    void *isr_context = ISR_setup_listener(ISR_PIN, 64, true);
+    void *isr_context = ISR_setup_listener(ISR_PIN, 128, true);
 
     if (isr_context == NULL) {
         printf("Error in ISR_setup_listener\n");
@@ -56,11 +64,12 @@ void ISR_task(void *pvParameter)
             }
         }
 
-        // Exit loop if is_capturing is false, trigfered internally
+        // Exit loop if is_capturing is false, triggered internally
         // by setting stop_at_max = true
         if (is_capturing != true) {
-        	ISR_dump(isr_context);
-        	break;
+            ISR_dump(isr_context);
+            // TODO we're not supposed to exit this task, so just start again from zero here
+            break;
         }
 
         prev_index = current_index;

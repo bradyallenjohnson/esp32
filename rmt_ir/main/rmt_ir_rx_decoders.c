@@ -47,9 +47,11 @@ static bool pulse_in_threshold(uint32_t pulse_width, uint8_t threshold, uint32_t
  * API functions
  */
 
+// This is a basic Phillips-style RC5 pulse encoding, but with differentiated manchester encoding
 int decode_rx_data_manchester(rx_ir_config *rx_config, rmt_rx_done_event_data_t *rx_done_data)
 {
     /* Decode both Differential and Normal Manchester encoding:
+     * https://techdocs.altium.com/display/FPGA/Philips+RC5+Infrared+Transmission+Protocol
      */
 
     // First lets remove all of the double pulses and make a simple list of single pulses
@@ -131,6 +133,7 @@ int decode_rx_data_manchester(rx_ir_config *rx_config, rmt_rx_done_event_data_t 
 
     // TODO need to verify rx_config->ir_config->start_pulse_data
 
+    // TODO for the following calculations, also need to consider the stop_pulse_data
     // For manchester encoding the number of pulses must be even.
     // If its not, then pad the last pulse with a zero.
     // Calculate the number of data_bytes based on the number of
@@ -222,3 +225,116 @@ int decode_rx_data_manchester(rx_ir_config *rx_config, rmt_rx_done_event_data_t 
     return RMT_IR_OK;
 }
 
+// This is a basic NEC-style pulse distance encoding
+int decode_rx_data_pulse_distance(rx_ir_config *rx_config, rmt_rx_done_event_data_t *rx_done_data)
+{
+    /* NEC IR transmission protocol with pulse distance encoding
+     * https://techdocs.altium.com/display/FPGA/NEC+Infrared+Transmission+Protocol
+     * - 9ms leading pulse burst (16 times the pulse burst length used for a logical data bit)
+     * - 4.5ms space
+     * - the 8-bit address for the receiving device
+     * - the 8-bit logical inverse of the address
+     * - the 8-bit command
+     * - the 8-bit logical inverse of the command
+     * - final 562.5µs pulse burst to signify the end of message transmission.
+     *
+     * Logical '0' – a 562.5µs pulse followed by a 562.5µs space, with a total transmit time of 1.125ms
+     * Logical '1' – a 562.5µs pulse followed by a 1.6875ms space, with a total transmit time of 2.25ms
+     */
+
+    uint8_t bit_index  = 0;
+    uint8_t byte_index = 0;
+
+    int num_data_bits = rx_done_data->num_symbols -
+            (rx_config->ir_config.start_pulse_data.num_pulses / 2) -
+            (rx_config->ir_config.stop_pulse_data.num_pulses);
+    int num_data_list_entries =
+            ((num_data_bits % 8) == 0 ?
+                    (num_data_bits / 8) : ((num_data_bits / 8) + 1));
+
+    // Only malloc new memory if the size changed from the previous run
+    if (rx_config->data_list == NULL) {
+        rx_config->data_list = malloc(sizeof(uint8_t) * num_data_list_entries);
+    } else if (num_data_list_entries != rx_config->num_data_list_entries) {
+        // Free the previous allocation
+        free(rx_config->data_list);
+        rx_config->data_list = malloc(sizeof(uint8_t) * num_data_list_entries);
+    }
+    memset(rx_config->data_list, 0, sizeof(uint8_t) * num_data_list_entries);
+    rx_config->num_data_list_entries = num_data_list_entries;
+
+    printf("Numer of data data bits %d, number of data list entries: %d\n",
+           num_data_bits, num_data_list_entries);
+
+    int i = (rx_config->ir_config.start_pulse_data.num_pulses / 2);
+    for ( ; i <= num_data_bits; i++) {
+        rmt_symbol_word_t *symbol = &rx_done_data->received_symbols[i];
+
+        /*printf("\t [%d] level0=%d duration0=%d, level1=%d duration1=%d\n",
+               i, symbol->level0, symbol->duration0,
+               symbol->level1, symbol->duration1);*/
+
+        /* level0/duration0 is the bit separator, and level1/duration1 is the bit indicator
+           - pulse_width*3 high-level is a logical "1"
+           - pulse_width   high-level is a logical "0" */
+
+        bool is_dur0_single_pulse = pulse_in_threshold(
+                rx_config->ir_config.pulse_width,
+                rx_config->ir_config.pulse_threshold,
+                symbol->duration0);
+        bool is_dur1_single_pulse = pulse_in_threshold(
+                rx_config->ir_config.pulse_width,
+                rx_config->ir_config.pulse_threshold,
+                symbol->duration1);
+        bool is_dur1_triple_pulse = pulse_in_threshold(
+                rx_config->ir_config.pulse_width * 3,
+                rx_config->ir_config.pulse_threshold * 3,
+                symbol->duration1);
+
+        // Check the bit separator validity
+        if (is_dur0_single_pulse == false || symbol->level0 != 0) {
+            // Erroneous data, duration0 is always a pulse_width bit separator
+            // TODO for now, just keep it.
+            printf("Error in bit separator [%d] level0=%d duration0=%d\n",
+                    i, symbol->level0, symbol->duration0);
+            // return;
+
+        /* Check for bit validity */
+        } else if (symbol->level1 != 1) {
+            printf("Error in data bit[%d] level1=%d duration1=%d\n",
+                   i, symbol->level1, symbol->duration1);
+            // return;
+
+        // Check for a logical 1
+        } else if (is_dur1_triple_pulse) {
+            rx_config->data_list[byte_index] |= (1 << bit_index);
+
+        // Check for logical 0 validity
+        } else if (is_dur1_single_pulse == false) {
+            printf("Error in low-level data[%d] level1=%d duration1=%d\n",
+                   i, symbol->level1, symbol->duration1);
+            // return;
+
+        }
+
+        if (bit_index == 7) {
+            bit_index = 0;
+            ++byte_index;
+        }
+        else {
+            bit_index++;
+        }
+    }
+
+    // Normally, NEC remotes have 4 data bits, do the checksum
+    if (num_data_list_entries == 4) {
+        if ((rx_config->data_list[0] | rx_config->data_list[1]) != 0xFF) {
+            printf("Error in data bytes [0, 1] checksum\n");
+        }
+        if ((rx_config->data_list[2] | rx_config->data_list[3]) != 0xFF) {
+            printf("Error in data bytes [2, 3] checksum\n");
+        }
+    }
+
+    return RMT_IR_OK;
+}

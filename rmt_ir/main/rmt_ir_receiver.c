@@ -152,13 +152,17 @@ int wait_for_receiver(rx_ir_config *rx_config)
     xQueueReceive(rx_config->rx_queue, &rx_done_data, portMAX_DELAY);
     //xQueueReceive(rx_config->rx_queue, &rx_done_data, pdMS_TO_TICKS(5000) /*portMAX_DELAY*/);
 
+    // TODO maybe we could have several remote types created, and auto-detect
+    //      the decoder based on matching the start_pulses
+
     int rc = RMT_IR_OK;
     printf("Data received: %d symbols\n", rx_done_data.num_symbols);
     if (rx_config->ir_config.ir_enc_type == MANCHESTER_ENCODING ||
         rx_config->ir_config.ir_enc_type == DIFF_MANCHESTER_ENCODING) {
         rc = decode_rx_data_manchester(rx_config, &rx_done_data);
+    } else if (rx_config->ir_config.ir_enc_type == PULSE_DISTANCE_ENCODING) {
+        rc = decode_rx_data_pulse_distance(rx_config, &rx_done_data);
     } else {
-        // TODO implement the other decoders
         printf("ERROR RX decoder [%d] is not implemented yet\n",
                rx_config->ir_config.ir_enc_type);
         rc = RMT_IR_ERROR;

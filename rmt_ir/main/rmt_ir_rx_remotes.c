@@ -54,3 +54,38 @@ int setup_remote_musical_fidelity(rx_ir_config *rx_config, int gpio_pin)
 
     return RMT_IR_OK;
 }
+
+
+int setup_remote_lg_tv(rx_ir_config *rx_config, int gpio_pin)
+{
+	int pulse_width_ms = 562;
+    rx_config->ir_config.gpio_pin              = gpio_pin;
+    rx_config->ir_config.ir_enc_type           = PULSE_DISTANCE_ENCODING;
+    rx_config->ir_config.pulse_width           = pulse_width_ms;
+    rx_config->ir_config.pulse_threshold       = 60;
+    rx_config->ir_config.signal_range_min_ns   = 200 * 1000;   // anything larger causes a "value too large" error
+    rx_config->ir_config.signal_range_max_ns   = 9100 * 1000;
+    rx_config->ir_config.num_data_bits         = 32;
+
+    int rc = init_receiver(rx_config);
+
+    if (rc != RMT_IR_OK) {
+        printf("Error in init_receiver\n");
+        return rc;
+    }
+
+    /* Start Data
+     * - 9ms leading pulse burst, 16 times the pulse_width
+     * - 4.5ms space, 8 times the pulse_width
+     */
+    add_pulse_data_info(&rx_config->ir_config.start_pulse_data, PULSE_LEVEL_HIGH, pulse_width_ms * 16);
+    add_pulse_data_info(&rx_config->ir_config.start_pulse_data, PULSE_LEVEL_LOW,  pulse_width_ms * 8);
+
+     // The stop data is one high pulse_width
+    add_pulse_data_info(&rx_config->ir_config.stop_pulse_data, PULSE_LEVEL_HIGH,  pulse_width_ms);
+
+    // This needs to be called externally when finished
+    //free_pulse_data_info(&rx_config->ir_config.start_pulse_data);
+
+    return RMT_IR_OK;
+}

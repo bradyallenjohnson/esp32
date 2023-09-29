@@ -127,9 +127,13 @@ int wait_for_receiver(rx_ir_config *rx_config);
 int decode_rx_data_manchester(
         rx_ir_config *rx_config,
         rmt_rx_done_event_data_t *rx_done_data);
+int decode_rx_data_pulse_distance(
+        rx_ir_config *rx_config,
+        rmt_rx_done_event_data_t *rx_done_data);
 
 // Implemented in rmt_ir_rx_remotes.c
 int setup_remote_musical_fidelity(rx_ir_config *rx_config, int gpio_pin);
+int setup_remote_lg_tv(rx_ir_config *rx_config, int gpio_pin);
 
 //-------------------------------------------------------------------
 

@@ -27,10 +27,16 @@ const int INITIAL_DELAY = 1500 / portTICK_PERIOD_MS;
 
 void rmt_ir_task(void *pvParameter)
 {
-	printf("Starting RMT IR Task for Musical Fidelity remote\n\n");
-
     rx_ir_config rx_config;
+
+#if 0
+	printf("Starting RMT IR Task for Musical Fidelity remote\n\n");
     int rc = setup_remote_musical_fidelity(&rx_config, RMT_RX_PIN);
+#else
+	printf("Starting RMT IR Task for LG TV remote\n\n");
+    int rc = setup_remote_lg_tv(&rx_config, RMT_RX_PIN);
+#endif
+
     if (rc != RMT_IR_OK) {
         printf("Error in init_receiver\n");
         return;

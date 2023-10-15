@@ -19,3 +19,7 @@
 void *lcd_2004_i2c_init(uint8_t scl_pin, uint8_t sda_pin, uint8_t lcd_i2c_hw_addr);
 
 void lcd_2004_i2c_write_string(void *lcd_handle, uint8_t row, uint8_t col, char *data, uint8_t data_len);
+
+void lcd_2004_i2c_display_on(void *lcd_handle);
+void lcd_2004_i2c_display_off(void *lcd_handle);
+

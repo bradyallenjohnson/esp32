@@ -30,6 +30,7 @@
 
 // The SunFounder 2004 LCD has a PCF8574 I2C chip
 // https://www.ti.com/lit/ds/symlink/pcf8574.pdf
+// https://en.wikipedia.org/wiki/Hitachi_HD44780_LCD_controller
 
 #define LCD_CLOCK_HZ (100 * 1000)
 
@@ -175,6 +176,24 @@ void lcd_2004_i2c_write_string(void *lcd_handle, uint8_t row, uint8_t col, char 
         write_4bits(lcd_context->lcd_device, high_nibble);
         write_4bits(lcd_context->lcd_device, low_nibble);
     }
+}
+
+void lcd_2004_i2c_display_on(void *lcd_handle)
+{
+    lcd_i2c_2004_context *lcd_context = (lcd_i2c_2004_context *) lcd_handle;
+    uint8_t byte_cmd = LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
+    write_LCD_command(lcd_context->lcd_device, byte_cmd);
+}
+
+void lcd_2004_i2c_display_off(void *lcd_handle)
+{
+    lcd_i2c_2004_context *lcd_context = (lcd_i2c_2004_context *) lcd_handle;
+    uint8_t byte_cmd = LCD_DISPLAYCONTROL | LCD_DISPLAYOFF | LCD_CURSOROFF | LCD_BLINKOFF;
+    write_LCD_command(lcd_context->lcd_device, byte_cmd);
+
+    byte_cmd = LCD_NOBACKLIGHT;
+    write_LCD_command(lcd_context->lcd_device, byte_cmd);
+    vTaskDelay(1 / portTICK_PERIOD_MS);
 }
 
 void *lcd_2004_i2c_init(uint8_t scl_pin, uint8_t sda_pin, uint8_t lcd_i2c_hw_addr)

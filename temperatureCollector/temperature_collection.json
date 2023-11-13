@@ -1,0 +1,15 @@
+{
+    "_comment": "This message is to register a device, and store its current IP",
+    "device-registration" : {
+        "device"    : "device-mac",
+        "device-ip" : "device-ip"
+    }
+},
+{
+    "_comment": "Each device will send this message periodically to report the latest temp/humidity",
+    "zone-temperature" : {
+        "device"      : "device-mac",
+        "temperature" : "degrees-celsius",
+        "humidity"    : "humidity-percentage"
+    }
+}

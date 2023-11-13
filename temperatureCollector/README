@@ -1,0 +1,37 @@
+This code is not meant to run on an ESP32, but maybe a Raspberry Pi.
+It will start an HTTP REST server backed by an sqlite3 DB and collect
+periodic temperature data from an EPS32 with a DHT22 temp sensor.
+
+#
+# To read from the local sqlite3 database:
+#
+
+$ sqlite3 ./collector.db
+
+sqlite> .tables
+device_info         device_temperature
+
+sqlite> .schema
+CREATE TABLE device_info (
+          device_id TEXT PRIMARY KEY,
+          device_ip TEXT NOT NULL,
+          location TEXT);
+CREATE TABLE device_temperature (
+        device_id REFERENCES device_info(device_id),
+        temperature TEXT NOT NULL,
+        humidity TEXT NOT NULL,
+        epoch_time INTEGER NOT NULL);
+
+sqlite> select * from device_info ;
+
+sqlite> select * from device_temperature ;
+
+#
+# The eps32 will register with its MAC and IP addresses, but not its location name.
+# This is by design, since the esp32 cant know where it is. To update a device'ss
+# location, issue the following curl command. More commands in curl.txt.
+#
+# Notice that "A842E3CD4B98" is the esp32 device's unique (hopefully unique, since
+# its the key) MAC address with the colons removed.
+#
+curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/A842E3CD4B98 -H "Content-Type: application/json" -d '{"device-registration": {"device": "A842E3CD4B98", "device-ip": "192.168.1.16", "location": "Office"}}'

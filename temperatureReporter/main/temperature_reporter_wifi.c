@@ -32,7 +32,7 @@
  * WiFi configuration
  */
 #define ESP_WIFI_SSID      "WifiColtrane"
-#define ESP_WIFI_PASS      "Johnson5family"
+#define ESP_WIFI_PASS      "****"
 #define ESP_MAXIMUM_RETRY  5
 #define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA2_PSK
 #define ESP_WIFI_SAE_MODE WPA3_SAE_PWE_BOTH

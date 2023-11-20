@@ -1,23 +1,24 @@
 
 #
 # Device Info
+#    Notice "201e88239088" is the device MAC address without the colons
 #
 
-curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/20%3a1e%3a88%3a23%3a90%3a88 \
+curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/201e88239088 \
      -H "Content-Type: application/json" \
-     -d '{"device-registration" : {"device"    : "20%3a1e%3a88%3a23%3a90%3a88",  \
+     -d '{"device-registration" : {"device"    : "201e88239088",  \
                                    "device-ip" : "192.168.100.16"}}'
 
         # Create a device
-curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json" -d '{"device-registration": {"device": "20%3a1e%3a88%3a23%3a90%3a88", "device-ip": "192.168.100.16"}}'
+curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/201e88239088 -H "Content-Type: application/json" -d '{"device-registration": {"device": "201e88239088", "device-ip": "192.168.100.16"}}'
 
 # The first post will be sent from the ESP32, but the location will be updated manually later
-curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json" -d '{"device-registration": {"device": "20%3a1e%3a88%3a23%3a90%3a88", "device-ip": "192.168.100.16", "location": "Garage"}}'
+curl -X POST http://127.0.0.1:8182/bj/api/v1.0/device/201e88239088 -H "Content-Type: application/json" -d '{"device-registration": {"device": "201e88239088", "device-ip": "192.168.100.16", "location": "Garage"}}'
 
         # Get 1 device info
-curl -X GET http://127.0.0.1:8182/bj/api/v1.0/device/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json"
+curl -X GET http://127.0.0.1:8182/bj/api/v1.0/device/201e88239088 -H "Content-Type: application/json"
 
-curl -X DELETE http://127.0.0.1:8182/bj/api/v1.0/device/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json"
+curl -X DELETE http://127.0.0.1:8182/bj/api/v1.0/device/201e88239088 -H "Content-Type: application/json"
 
         # Get all devices
 curl -X GET http://127.0.0.1:8182/bj/api/v1.0/device -H "Content-Type: application/json"
@@ -26,12 +27,12 @@ curl -X GET http://127.0.0.1:8182/bj/api/v1.0/device -H "Content-Type: applicati
 # Device Temperature
 #
 
-curl -X POST http://127.0.0.1:8182/bj/api/v1.0/temperature/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json" \
-     -d '{"zone-temperature" : {"device"      : "20%3a1e%3a88%3a23%3a90%3a88", \
+curl -X POST http://127.0.0.1:8182/bj/api/v1.0/temperature/201e88239088 -H "Content-Type: application/json" \
+     -d '{"zone-temperature" : {"device"      : "201e88239088", \
                                 "temperature" : "degrees-celsius", \
                                 "humidity"    : "humidity-percentage"}}'
 
-curl -X POST http://127.0.0.1:8182/bj/api/v1.0/temperature/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json" -d '{"zone-temperature": {"device": "20%3a1e%3a88%3a23%3a90%3a88", "temperature": "22.5", "humidity": "45"}}'
-curl -X GET http://127.0.0.1:8182/bj/api/v1.0/temperature/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json"
-curl -X DELETE http://127.0.0.1:8182/bj/api/v1.0/temperature/20%3a1e%3a88%3a23%3a90%3a88 -H "Content-Type: application/json"
+curl -X POST http://127.0.0.1:8182/bj/api/v1.0/temperature/201e88239088 -H "Content-Type: application/json" -d '{"zone-temperature": {"device": "201e88239088", "temperature": "22.5", "humidity": "45"}}'
+curl -X GET http://127.0.0.1:8182/bj/api/v1.0/temperature/201e88239088 -H "Content-Type: application/json"
+curl -X DELETE http://127.0.0.1:8182/bj/api/v1.0/temperature/201e88239088 -H "Content-Type: application/json"
 

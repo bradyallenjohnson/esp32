@@ -1,0 +1,5 @@
+sudo cp /home/brady/projects/temperatureCollector/systemd/temperature_collector.service /usr/lib/systemd/system
+sudo chmod 644 /usr/lib/systemd/system/temperature_collector.service
+sudo systemctl daemon-reload
+sudo systemctl enable temperature_collector
+sudo systemctl start temperature_collector

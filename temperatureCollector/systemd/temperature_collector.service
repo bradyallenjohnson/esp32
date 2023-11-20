@@ -1,0 +1,18 @@
+[Unit]
+Description=TemperatureCollector REST server with DB
+After=network-online.target systemd-user-sessions.service
+
+[Service]
+Type=simple
+TimeoutSec=240
+Restart=on-failure
+RestartSec=15
+StandardOutput=journal+console
+StandardError=inherit
+Environment="PROJECT_DIRECTORY=/home/brady/projects/temperatureCollector"
+Environment="PYTHONPATH=${PROJECT_DIRECTORY}"
+PassEnvironment=PROJECT_DIRECTORY PYTHONPATH
+ExecStart=python3 ${PROJECT_DIRECTORY}/TemperatureCollectorMain.py -d ${PROJECT_DIRECTORY}/collector.db
+
+[Install]
+WantedBy=default.target
